@@ -44,9 +44,40 @@ def edit_todo(json_loaded):
         update_task(json_loaded, id)
     
 
+def ask_what_to_edit():
+    print("1. Edit Task")
+    print("2. Edit Status")
+    
+    user_response = input("Coose an option (1 or 2): ")
+    
+    return user_response
+
 
 def update_task(json_loaded, id):
-    print(id, "OOp")
+    
+    chosen = ask_what_to_edit()
+    
+    print("You chose: ", chosen )
+    
+    chosen_key = ""
+    
+    if(chosen == "1" ):
+        chosen_key = "task"
+    else:
+        chosen_key = "status"
+    
+    tasks = json_loaded['tasks']
+
+    for task in tasks:
+        if task["id"] == int(id):
+            updated_value = input("Please enter your updated value: ")
+            task[chosen_key] = updated_value
+
+    updated_key_value = json.dumps(json_loaded, indent=2)
+    
+    with open('../data/tasks.json', 'w', encoding='utf-8') as file:
+        file.write(updated_key_value)
+
 
 def display_options(json_loaded):
     tasks = json_loaded['tasks']
