@@ -2,8 +2,18 @@
   "tasks": [
     {
       "id": 1,
-      "task": "Ass",
+      "task": "Get new Mac Mini M2 gear for home office.",
       "status": "new"
+    },
+    {
+      "id": 2,
+      "task": "Master Python because its so fun and amazing.",
+      "status": "new"
+    },
+    {
+      "id": 3,
+      "task": "Love Nat ",
+      "status": "Done"
     }
   ]
 }
