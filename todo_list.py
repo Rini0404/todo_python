@@ -1,23 +1,40 @@
 
 import json
+from colorama import Fore, Style, init
+
+init(autoreset=True)  # This line will automatically reset the color to its original after each print statement
 
 start_question = "What would you like to do? (add/remove/edit/quit): "
-add_question = "What would you like to add? "
-remove_question = "What would you like to remove? "
+add_question = Fore.CYAN + "What would you like to add? "
+remove_question = Fore.RED + "What would you like to remove? "
 quit_question = "Are you sure you want to quit? (y/n): "
 quit_message = "Goodbye!"
 question = ""
 tasks = []
 
+help_message = Fore.YELLOW + """
+Welcome to the Todo List App!
+Type 'quit' at any time to exit.
+Type 'list' at any time to see your list.
+Type 'help' at any time to see this message again.
+""" + Fore.RESET
+
 def get_option():
-    print('\n'"1. Add")
-    print("2. Remove")
-    print("3. Edit")
-    print("4. Quit")
-    option = input("Please choose an option (1-4): ")
+    print("┌────────────────┐")
+    print("│" + Fore.CYAN + " 1. Add         " + Fore.RESET + "│")
+    print("│" + Fore.GREEN + " 2. Remove      " + Fore.RESET + "│")
+    print("│" + Fore.YELLOW + " 3. Edit        " + Fore.RESET + "│")
+    print("│" + Fore.RED + " 4. Quit        " + Fore.RESET + "│")
+    print("│" + Fore.BLUE + " 5. List        " + Fore.RESET + "│")
+    print("└────────────────┘")
+    option = input("Please choose an option (1-5): ")
     return option
 
+
 def verify_option(option, json_loaded):
+    with open('../data/tasks.json', 'r') as f:
+        list = json.load(f)
+        
     if option == "1":
         data = input(add_question)
         add_to_do(data, json_loaded)
@@ -29,12 +46,14 @@ def verify_option(option, json_loaded):
         pass
     elif option == "4":
         # You can add your quit mechanism here
-        pass
+        print(quit_message)
+        exit()
+    elif option == "5":
+        list_tasks(list)
     else:
         print("Invalid option, please try again.")
 
 def edit_todo(json_loaded):
-    print("edit")
     
     id = display_options(json_loaded)
     
@@ -45,8 +64,8 @@ def edit_todo(json_loaded):
     
 
 def ask_what_to_edit():
-    print("1. Edit Task")
-    print("2. Edit Status")
+    print(Fore.CYAN + "1. Edit Task")
+    print(Fore.CYAN + "2. Edit Status")
     
     user_response = input("Coose an option (1 or 2): ")
     
@@ -56,8 +75,6 @@ def ask_what_to_edit():
 def update_task(json_loaded, id):
     
     chosen = ask_what_to_edit()
-    
-    print("You chose: ", chosen )
     
     chosen_key = ""
     
@@ -83,7 +100,7 @@ def display_options(json_loaded):
     tasks = json_loaded['tasks']
     
     for task in tasks:
-        print(f'{task["id"]}. {task["task"]}')
+        print(f'{task["id"]}. {Fore.YELLOW}{task["task"]}{Fore.RESET}')
 
     id = input("Choose a number: ")
     
@@ -96,6 +113,15 @@ def does_task_exist(json_loaded, id):
             return True
     return False
 
+def update_task_ids(json_loaded):
+    tasks = json_loaded["tasks"]
+    for i, task in enumerate(tasks, start=1):
+        task["id"] = i
+
+    with open('../data/tasks.json', 'w', encoding='utf-8') as file: 
+        file.write(json.dumps(json_loaded, indent=2))
+
+
 def delete_task(json_loaded):
     print(remove_question)
     
@@ -104,8 +130,6 @@ def delete_task(json_loaded):
     does_exist = does_task_exist(json_loaded, id)
 
     if(does_exist): 
-
-        print("Deleting option: ", id)
 
         remove_from_list(json_loaded, id)
 
@@ -129,7 +153,9 @@ def remove_from_list(json_loaded, id):
     with open('../data/tasks.json', 'w', encoding='utf-8') as file: 
         file.write(json.dumps(json_loaded, indent=2))
 
-    print("Success, deleted task! : ", task_name)
+    print(Fore.MAGENTA + "Success, deleted task! : ", task_name)
+
+    update_task_ids(json_loaded)
 
 
 
@@ -157,18 +183,23 @@ def add_to_do(todo, json_loaded):
     with open('../data/tasks.json', 'w', encoding='utf-8') as file:
         file.write(added_todo_task)
 
+def list_tasks(json_loaded):
+    print("Here are your tasks:")
+    for task in json_loaded['tasks']:
+        # print(f'{task["id"]}. {task["task"]}')
+        # print with color
+        print(f'{task["id"]}. {Fore.GREEN}{task["task"]}{Fore.RESET} - {Fore.MAGENTA}{task["status"]}{Fore.RESET}')
+        
+    start()
+
+def help():
+    print(help_message)
+    start()
 
 
 def start():
-    print("Welcome to the Todo List App!")
-    print("Type 'quit' at any time to exit.")
-    print("Type 'list' at any time to see your list.")
-    print("Type 'help' at any time to see this message again.")
-    print('\n')
+    print(help_message)
     
-    if(question == "quit"):
-        return
-        
     with open('../data/tasks.json', 'r') as f:
         data = json.load(f)
         all_tasks = data["tasks"]
@@ -182,11 +213,20 @@ def start():
 
         print('You have', len(all_tasks),  word_type, '\n')
         for task in all_tasks: 
-            print(task['task'])
+            print(f'{task["id"]}. {Fore.GREEN}{task["task"]}{Fore.RESET} - {Fore.MAGENTA}{task["status"]}{Fore.RESET}')
             
-
-    option = get_option()
-
-    verify_option(option, data)
+        while True:  
+            option = get_option()
+            
+            if option.lower() == 'quit':
+                print(quit_message)
+                break
+            elif option.lower() == 'list':
+                list_tasks(data)
+            elif option.lower() == 'help':
+                help()
+            else:
+                verify_option(option, data)
+    
 
 start()
